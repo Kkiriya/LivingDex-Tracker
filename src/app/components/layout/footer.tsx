@@ -6,7 +6,7 @@ export default function Footer() {
       <aside>
         <p className="font-semibold">LivingDex Tracker</p>
         <p>Track your living dex across games.</p>
-        <p>© {new Date().getFullYear()} PokéTracker</p>
+        <p>© 2026 PokéTracker</p>
       </aside>
 
       <nav className="flex gap-4">
