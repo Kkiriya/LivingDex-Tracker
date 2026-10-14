@@ -15,6 +15,9 @@ model User {
   email       String      @unique
   livingDexes LivingDex[]
 
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
   @@map("users")
 }
 
@@ -24,6 +27,9 @@ model Type {
   name   String @unique
 
   pokemonTypes PokemonType[]
+
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
 
   @@map("types")
 }
@@ -35,6 +41,9 @@ model Pokedex {
 
   pokemonEntries PokedexPokemon[]
   livingDexes    LivingDex[]
+
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
 
   @@map("pokedex")
 }
@@ -48,6 +57,9 @@ model Pokemon {
   pokedexEntries   PokedexPokemon[]
   livingDexEntries LivingDexPokemon[]
 
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
   @@map("pokemon")
 }
 
@@ -59,6 +71,9 @@ model PokemonType {
 
   pokemon Pokemon @relation(fields: [pokeId], references: [pokeId])
   type    Type    @relation(fields: [typeId], references: [typeId])
+
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
 
   @@id([pokeId, typeId])
   @@unique([pokeId, slot])
@@ -73,6 +88,9 @@ model PokedexPokemon {
 
   pokedex Pokedex @relation(fields: [dexId], references: [dexId])
   pokemon Pokemon @relation(fields: [pokeId], references: [pokeId])
+
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
 
   @@id([dexId, pokeId])
   @@unique([dexId, entryNumber])
@@ -90,6 +108,9 @@ model LivingDex {
   user    User               @relation(fields: [userId], references: [userId])
   pokemon LivingDexPokemon[]
 
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
+
   @@map("living_dex")
 }
 
@@ -103,6 +124,9 @@ model LivingDexPokemon {
 
   livingDex LivingDex @relation(fields: [livingDexId], references: [livingDexId], onDelete: Cascade)
   pokemon   Pokemon   @relation(fields: [pokeId], references: [pokeId])
+
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt
 
   @@id([livingDexId, pokeId])
   @@map("living_dex_pokemon")

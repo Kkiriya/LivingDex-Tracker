@@ -107,10 +107,24 @@ async function fetchTypes(): Promise<TypeData[]> {
   return fetchedTypesList;
 }
 
-async function seedTypes(typesList: TypeData[]): Boolean {
-  // checks if provided typeData is valid
-  if (typesList === null) return false;
-  if (typesList.length === 0) return false;
+async function seedTypes(typesList: TypeData[]): Promise<boolean> {
+  // Check if provided typeData is valid
+  if (!typesList || typesList.length === 0) return false;
 
   // Seeds the Type table in the DB
+  for (const type of typesList) {
+    await prisma.type.upsert({
+      where: { typeId: type.typeId },
+      update: { name: type.name },
+      create: {
+        typeId: type.typeId,
+        name: type.name,
+      },
+    });
+  }
+  return true;
 }
+
+// ====================================== //
+// Fetching Pokedex & Seeding DB
+// ===================================== //
