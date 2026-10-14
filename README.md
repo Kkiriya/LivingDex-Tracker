@@ -31,9 +31,7 @@ erDiagram
 
     POKEMON {
         int poke_id PK
-        string name
-        string sprite_img_link
-        
+        string name        
     }
 
     TYPE { 
