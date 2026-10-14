@@ -1,4 +1,100 @@
-// prisma/schema.prisma
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
 datasource db {
   provider = "postgresql"
+}
+
+// authenticated through clerk
+model User {
+  userId   Int     @id @default(autoincrement()) @map("user_id")
+  clerkId  String  @unique @map("clerk_id")
+  username String?
+  email    String?
+
+  trackedPokemon UserTrackedPokemon[]
+
+  @@map("users")
+}
+
+// Contains all the pokemons
+model Pokemon {
+  pokeId Int    @id @map("poke_id")
+  name   String
+
+  types      PokemonType[]
+  gameOrders PokeGameOrder[]
+
+  @@map("pokemon")
+}
+
+// pokemon types
+model Type {
+  typeId Int    @id @map("type_id")
+  name   String @unique
+
+  pokemonTypes PokemonType[]
+
+  @@map("types")
+}
+
+// many-to-many relationship between pokemon and types
+model PokemonType {
+  pokeId Int @map("poke_id")
+  typeId Int @map("type_id")
+  slot   Int
+
+  pokemon Pokemon @relation(fields: [pokeId], references: [pokeId])
+  type    Type    @relation(fields: [typeId], references: [typeId])
+
+  @@id([pokeId, typeId])
+  @@unique([pokeId, slot])
+  @@map("pokemon_types")
+}
+
+// Represents a supported pokemon game
+model Game {
+  gameId Int    @id @default(autoincrement()) @map("game_id")
+  name   String @unique
+
+  pokemonOrders PokeGameOrder[]
+
+  @@map("games")
+}
+
+// Pokemon dex entry within a specific game
+model PokeGameOrder {
+  pokeId    Int @map("poke_id")
+  gameId    Int @map("game_id")
+  gameOrder Int @map("game_order")
+
+  pokemon Pokemon @relation(fields: [pokeId], references: [pokeId])
+  game    Game    @relation(fields: [gameId], references: [gameId])
+
+  trackedBy UserTrackedPokemon[]
+
+  @@id([pokeId, gameId])
+  @@unique([gameId, gameOrder])
+  @@map("poke_game_orders")
+}
+
+// User progress for each pokemon in each game
+model UserTrackedPokemon {
+  userId Int @map("user_id")
+  pokeId Int @map("poke_id")
+  gameId Int @map("game_id")
+
+  seen   Boolean @default(false)
+  caught Boolean @default(false)
+  shiny  Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [userId])
+
+  gamePokemon PokeGameOrder @relation(fields: [pokeId, gameId], references: [pokeId, gameId])
+
+  @@id([userId, pokeId, gameId])
+  @@index([pokeId, gameId])
+  @@map("user_tracked_pokemon")
 }
