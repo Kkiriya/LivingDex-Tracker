@@ -9,25 +9,13 @@ datasource db {
 
 // authenticated through clerk
 model User {
-  userId   Int     @id @default(autoincrement()) @map("user_id")
-  clerkId  String  @unique @map("clerk_id")
-  username String?
-  email    String?
-
-  trackedPokemon UserTrackedPokemon[]
+  userId      Int         @id @default(autoincrement()) @map("user_id")
+  clerkId     String      @unique @map("clerk_id")
+  username    String
+  email       String      @unique
+  livingDexes LivingDex[]
 
   @@map("users")
-}
-
-// Contains all the pokemons
-model Pokemon {
-  pokeId Int    @id @map("poke_id")
-  name   String
-
-  types      PokemonType[]
-  gameOrders PokeGameOrder[]
-
-  @@map("pokemon")
 }
 
 // pokemon types
@@ -38,6 +26,29 @@ model Type {
   pokemonTypes PokemonType[]
 
   @@map("types")
+}
+
+// A whole pokedex with all of its pokemons in order
+model Pokedex {
+  dexId Int    @id @map("dex_id")
+  name  String
+
+  pokemonEntries PokedexPokemon[]
+  livingDexes    LivingDex[]
+
+  @@map("pokedex")
+}
+
+// Contains all the pokemons
+model Pokemon {
+  pokeId Int    @id @map("poke_id")
+  name   String
+
+  types            PokemonType[]
+  pokedexEntries   PokedexPokemon[]
+  livingDexEntries LivingDexPokemon[]
+
+  @@map("pokemon")
 }
 
 // many-to-many relationship between pokemon and types
@@ -54,47 +65,45 @@ model PokemonType {
   @@map("pokemon_types")
 }
 
-// Represents a supported pokemon game
-model Game {
-  gameId Int    @id @default(autoincrement()) @map("game_id")
-  name   String @unique
+// links each pokemon the a specific dex with the correct dex order
+model PokedexPokemon {
+  dexId       Int @map("dex_id")
+  pokeId      Int @map("poke_id")
+  entryNumber Int @map("entry_number")
 
-  pokemonOrders PokeGameOrder[]
-
-  @@map("games")
-}
-
-// Pokemon dex entry within a specific game
-model PokeGameOrder {
-  pokeId    Int @map("poke_id")
-  gameId    Int @map("game_id")
-  gameOrder Int @map("game_order")
-
+  pokedex Pokedex @relation(fields: [dexId], references: [dexId])
   pokemon Pokemon @relation(fields: [pokeId], references: [pokeId])
-  game    Game    @relation(fields: [gameId], references: [gameId])
 
-  trackedBy UserTrackedPokemon[]
-
-  @@id([pokeId, gameId])
-  @@unique([gameId, gameOrder])
-  @@map("poke_game_orders")
+  @@id([dexId, pokeId])
+  @@unique([dexId, entryNumber])
+  @@map("pokedex_pokemons")
 }
 
-// User progress for each pokemon in each game
-model UserTrackedPokemon {
-  userId Int @map("user_id")
-  pokeId Int @map("poke_id")
-  gameId Int @map("game_id")
+model LivingDex {
+  livingDexId Int     @id @default(autoincrement()) @map("living_dex_id")
+  dexId       Int     @map("dex_id")
+  userId      Int     @map("user_id")
+  name        String
+  description String? @map("desc")
 
-  seen   Boolean @default(false)
-  caught Boolean @default(false)
-  shiny  Boolean @default(false)
+  pokedex Pokedex            @relation(fields: [dexId], references: [dexId])
+  user    User               @relation(fields: [userId], references: [userId])
+  pokemon LivingDexPokemon[]
 
-  user User @relation(fields: [userId], references: [userId])
+  @@map("living_dex")
+}
 
-  gamePokemon PokeGameOrder @relation(fields: [pokeId, gameId], references: [pokeId, gameId])
+// A pokemon that is part of a living dex
+model LivingDexPokemon {
+  livingDexId Int     @map("living_dex_id")
+  pokeId      Int     @map("poke_id")
+  seen        Boolean @default(false)
+  caught      Boolean @default(false)
+  shiny       Boolean @default(false)
 
-  @@id([userId, pokeId, gameId])
-  @@index([pokeId, gameId])
-  @@map("user_tracked_pokemon")
+  livingDex LivingDex @relation(fields: [livingDexId], references: [livingDexId], onDelete: Cascade)
+  pokemon   Pokemon   @relation(fields: [pokeId], references: [pokeId])
+
+  @@id([livingDexId, pokeId])
+  @@map("living_dex_pokemon")
 }
