@@ -16,7 +16,9 @@ export default function Header() {
       <nav className="navbar-center hidden md:flex">
         <ul className="menu menu-horizontal px-1">
           <li>
-            <Link href="/">Pokédex</Link>
+            <Link href="/src/app/(living-dex)/firered.tsx">
+              FireRed & LeafGreen
+            </Link>
           </li>
 
           <Show when="signed-in">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -34,7 +35,9 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col">
         <ClerkProvider>
-          <Header />
+          <Suspense fallback={<div className="h-16 bg-base-200" />}>
+            <Header />
+          </Suspense>
 
           <main className="flex-1">{children}</main>
 
