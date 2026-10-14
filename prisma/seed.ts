@@ -21,19 +21,91 @@ type data = {
   url: string;
 };
 
+/**
+ *  Response Types
+ */
+
 // Type of responses of API fetch on /type
 type TypeResponse = {
-  next: string | null; // allows us to fetch all results in case of pagination
   results: {
     name: string;
     url: string;
   }[];
 };
 
-// Type specific to Data meant to be stored for Type
+// Type of response of API fetch on /pokedex
+type PokedexResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: {
+    name: string;
+    url: string;
+  }[];
+};
+
+// Type of response of API fetch on /pokemon
+type PokemonResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: {
+    name: string;
+    url: string;
+  }[];
+};
+
+/**
+ *  Data Types
+ */
+
+// Type specific to Data meant to be stored in Type table
 type TypeData = {
   typeId: number;
   name: string;
+};
+
+// Type specific to Data meant to be stored in Pokedex table
+type PokedexData = {
+  dexId: number;
+  name: string;
+};
+
+// Type specific to Data meant to be stored in Pokemon table
+type PokemonData = {
+  pokeId: number;
+  name: string;
+};
+
+// Type specific to Data meant to be stored in PokemonType table
+type PokemonType = {
+  pokeId: number;
+  typeId: number;
+  slot: number;
+};
+
+// Type specific to Data meant to be stored in PokedexPokemon table
+type PokedexPokemon = {
+  dexId: number;
+  pokeId: number;
+  entryNumber: number;
+};
+
+// Type specific to Data meant to be stored in PokedexPokemon table
+type LivingDex = {
+  livingDexId: number;
+  dexId: number;
+  userId: number;
+  name: string;
+  description: string | null;
+};
+
+type LivingDexPokemon = {
+  livingDexId: number;
+  pokeId: number;
+  seen: boolean;
+  caught: boolean;
+  shiny: boolean;
 };
 
 // fetches API with provided URL, has retries and timeouts
@@ -126,5 +198,68 @@ async function seedTypes(typesList: TypeData[]): Promise<boolean> {
 }
 
 // ====================================== //
+// Fetching Pokemon & Seeding DB
+// ===================================== //
+async function fetchPokemons(): Promise<PokemonData[]> {
+  const fetchedPokemonList: PokemonData[] = []; // list of all fetched pokemons
+  const limit = 100;
+  let offset = 0;
+
+  while (true) {
+    // fetches current page
+    const pokemonsResponse = await fetchApi<PokemonResponse>(
+      "pokemon",
+      undefined,
+      undefined,
+      offset,
+      limit,
+    );
+
+    // adds data to fetchedList
+    for (const pokemon of pokemonsResponse.results) {
+      fetchedPokemonList.push({
+        pokeId: Number(pokemon.url.split("/").at(-2)),
+        name: pokemon.name,
+      });
+    }
+
+    // checks if we are on the last page
+    if (pokemonsResponse.next === null) return fetchedPokemonList;
+
+    // raise the offset to go to next page
+    offset += pokemonsResponse.results.length;
+  }
+}
+
+async function seedPokemons(pokemonsList: PokemonData[]): Promise<boolean> {
+  // Check if provided pokemonData is valid
+  if (pokemonsList.length === 0 || pokemonsList === null) return false;
+
+  // Seeds the Pokemon table in the DB
+  for (const pokemon of pokemonsList) {
+    await prisma.pokemon.upsert({
+      where: { pokeId: pokemon.pokeId },
+      update: { name: pokemon.name },
+      create: {
+        pokeId: pokemon.pokeId,
+        name: pokemon.name,
+      },
+    });
+  }
+  return true;
+}
+
+// ====================================== //
+// Fetching PokemonType & Seeding DB
+// ===================================== //
+
+/**
+ *  TBD, it's honestly not super necessary for now
+ */
+
+// ====================================== //
 // Fetching Pokedex & Seeding DB
 // ===================================== //
+async function fetchPokedex(): Promise<PokedexData[]> {
+  const fetchedPokedexesList: TypeData[] = []; // list of all fetched pokedexes
+}
