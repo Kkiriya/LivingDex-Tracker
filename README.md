@@ -19,24 +19,19 @@ erDiagram
         string email
     }
 
-    %% Contains all information for pokemon tracked by a user
-    USER_TRACKED_POKEMON {
-        int user_id PK, FK
-        int poke_id PK, FK
-        int game_id PK, FK
-        boolean seen
-        boolean caught
-        boolean shiny
+    TYPE { 
+        int type_id PK
+        string name
+    }
+
+    POKEDEX {
+        int dex_id PK
+        string name
     }
 
     POKEMON {
         int poke_id PK
         string name        
-    }
-
-    TYPE { 
-        int type_id PK
-        string name
     }
 
     POKEMON_TYPE {
@@ -45,32 +40,43 @@ erDiagram
         int slot     
     }
 
-    %% Represents each game
-    %% One game entry per supported games
-    GAME {
-        int game_id PK
-        string name
+    POKEDEX_POKEMON {
+        int dex_id PK, FK
+        int poke_id PK, FK
+        int entry_number
     }
 
-    %% The dex order for a pokemon in a given Game
-    %% Every game will have the same amount of these as there is dex entries
-    POKE_GAME_ORDER {
-        int poke_id PK, FK
-        int game_id PK, FK
-        %% enforce UNQIQUE(game_id, game_order)
-        int game_order
+    LIVING_DEX {
+        int living_dex_id PK
+        int dex_id FK
+        int user_id FK
+
+        string name 
+        string desc
     }
+
+    LIVING_DEX_POKEMON {
+        int living_dex_id PK, FK
+        int poke_id PK, FK
+
+        boolean seen
+        boolean caught
+        boolean shiny
+    }
+
+    POKEDEX ||--o{ POKEDEX_POKEMON : has
+    POKEMON ||--o{ POKEDEX_POKEMON : appears_in
 
     POKEMON ||--o{ POKEMON_TYPE : has
     TYPE ||--o{ POKEMON_TYPE : appears_in
 
-    GAME ||--o{ POKE_GAME_ORDER : appears_in
-    POKEMON ||--o{ POKE_GAME_ORDER : has
+    USER ||--o{ LIVING_DEX : owns
 
-    USER ||--o{ USER_TRACKED_POKEMON : tracks
-    POKE_GAME_ORDER ||--o{ USER_TRACKED_POKEMON : tracked_as
+    LIVING_DEX }o--|| POKEDEX : tracked_by
+    LIVING_DEX ||--o{ LIVING_DEX_POKEMON : tracks
+    LIVING_DEX_POKEMON }o--|| POKEDEX_POKEMON : tracked_in
 
-    
+
 ```
 
 ---
